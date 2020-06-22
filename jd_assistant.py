@@ -118,7 +118,7 @@ class Assistant(object):
         }
         resp = self.sess.post(url, params=payload, data=data, headers=self.headers)
         if not response_status(resp):
-            logger.error('获取是否需要验证码失败')
+            logger.error(u'获取是否需要验证码失败')
             return False
 
         resp_json = json.loads(resp.text[1:-1])  # ({"verifycode":true})
@@ -142,7 +142,7 @@ class Assistant(object):
         resp = self.sess.get(url, params=payload, headers=headers)
 
         if not response_status(resp):
-            logger.error('获取验证码失败')
+            logger.error(u'获取验证码失败')
             return ''
 
         save_image(resp, image_file)
@@ -174,13 +174,13 @@ class Assistant(object):
     @deprecated
     def login_by_username(self):
         if self.is_login:
-            logger.info('登录成功')
+            logger.info(u'登录成功')
             return True
 
         username = input('账号:')
         password = input('密码:')
         if (not username) or (not password):
-            logger.error('用户名或密码不能为空')
+            logger.error(u'用户名或密码不能为空')
             return False
         self.username = username
 
@@ -189,10 +189,10 @@ class Assistant(object):
 
         auth_code = ''
         if self._need_auth_code(username):
-            logger.info('本次登录需要验证码')
+            logger.info(u'本次登录需要验证码')
             auth_code = self._get_auth_code(uuid)
         else:
-            logger.info('本次登录不需要验证码')
+            logger.info(u'本次登录不需要验证码')
 
         login_url = "https://passport.jd.com/uc/loginService"
         payload = {
@@ -210,14 +210,14 @@ class Assistant(object):
         resp = self.sess.post(url=login_url, data=data, headers=headers, params=payload)
 
         if not response_status(resp):
-            logger.error('登录失败')
+            logger.error(u'登录失败')
             return False
 
         if not self._get_login_result(resp):
             return False
 
         # login success
-        logger.info('登录成功')
+        logger.info(u'登录成功')
         self.nick_name = self.get_user_info()
         self._save_cookies()
         self.is_login = True
@@ -263,12 +263,12 @@ class Assistant(object):
         resp = self.sess.get(url=url, headers=headers, params=payload)
 
         if not response_status(resp):
-            logger.info('获取二维码失败')
+            logger.info(u'获取二维码失败')
             return False
 
         QRCode_file = 'QRcode.png'
         save_image(resp, QRCode_file)
-        logger.info('二维码获取成功，请打开京东APP扫描')
+        logger.info(u'二维码获取成功，请打开京东APP扫描')
         open_image(QRCode_file)
         return True
 
@@ -287,15 +287,15 @@ class Assistant(object):
         resp = self.sess.get(url=url, headers=headers, params=payload)
 
         if not response_status(resp):
-            logger.error('获取二维码扫描结果异常')
+            logger.error(u'获取二维码扫描结果异常')
             return False
 
         resp_json = parse_json(resp.text)
         if resp_json['code'] != 200:
-            logger.info('Code: %s, Message: %s', resp_json['code'], resp_json['msg'])
+            logger.info(u'Code: %s, Message: %s', resp_json['code'], resp_json['msg'])
             return None
         else:
-            logger.info('已完成手机客户端确认')
+            logger.info(u'已完成手机客户端确认')
             return resp_json['ticket']
 
     def _validate_QRcode_ticket(self, ticket):
@@ -321,7 +321,7 @@ class Assistant(object):
         :return:
         """
         if self.is_login:
-            logger.info('登录成功')
+            logger.info(u'登录成功')
             return
 
         self._get_login_page()
@@ -345,7 +345,7 @@ class Assistant(object):
         if not self._validate_QRcode_ticket(ticket):
             raise AsstException('二维码信息校验失败')
 
-        logger.info('二维码登录成功')
+        logger.info(u'二维码登录成功')
         self.is_login = True
         self.nick_name = self.get_user_info()
         self._save_cookies()
@@ -374,7 +374,7 @@ class Assistant(object):
         """
         reserve_url = self._get_reserve_url(sku_id)
         if not reserve_url:
-            logger.error('%s 非预约商品', sku_id)
+            logger.error(u'%s 非预约商品', sku_id)
             return
         headers = {
             'User-Agent': self.user_agent,
@@ -465,13 +465,13 @@ class Assistant(object):
             stock_state = stock_info.get('StockState')  # 商品库存状态：33 -- 现货  0,34 -- 无货  36 -- 采购中  40 -- 可配货
             return sku_state == 1 and stock_state in (33, 40)
         except requests.exceptions.Timeout:
-            logger.error('查询 %s 库存信息超时(%ss)', sku_id, self.timeout)
+            logger.error(u'查询 %s 库存信息超时(%ss)', sku_id, self.timeout)
             return False
         except requests.exceptions.RequestException as request_exception:
-            logger.error('查询 %s 库存信息发生网络请求异常：%s', sku_id, request_exception)
+            logger.error(u'查询 %s 库存信息发生网络请求异常：%s', sku_id, request_exception)
             return False
         except Exception as e:
-            logger.error('查询 %s 库存信息发生异常, resp: %s, exception: %s', sku_id, resp_text, e)
+            logger.error(u'查询 %s 库存信息发生异常, resp: %s, exception: %s', sku_id, resp_text, e)
             return False
 
     @check_login
@@ -515,7 +515,7 @@ class Assistant(object):
         try:
             resp = self.sess.post(url=url, headers=headers, data=data, timeout=self.timeout)
         except requests.exceptions.Timeout:
-            logger.error('查询 %s 库存信息超时(%ss)', list(items_dict.keys()), self.timeout)
+            logger.error(u'查询 %s 库存信息超时(%ss)', list(items_dict.keys()), self.timeout)
             return False
         except requests.exceptions.RequestException as e:
             raise AsstException('查询 %s 库存信息异常：%s' % (list(items_dict.keys()), e))
@@ -570,13 +570,13 @@ class Assistant(object):
                     break
             return stock
         except requests.exceptions.Timeout:
-            logger.error('查询 %s 库存信息超时(%ss)', list(items_dict.keys()), self.timeout)
+            logger.error(u'查询 %s 库存信息超时(%ss)', list(items_dict.keys()), self.timeout)
             return False
         except requests.exceptions.RequestException as request_exception:
-            logger.error('查询 %s 库存信息发生网络请求异常：%s', list(items_dict.keys()), request_exception)
+            logger.error(u'查询 %s 库存信息发生网络请求异常：%s', list(items_dict.keys()), request_exception)
             return False
         except Exception as e:
-            logger.error('查询 %s 库存信息发生异常, resp: %s, exception: %s', list(items_dict.keys()), resp_text, e)
+            logger.error(u'查询 %s 库存信息发生异常, resp: %s, exception: %s', list(items_dict.keys()), resp_text, e)
             return False
 
     def _if_item_removed(self, sku_id):
@@ -651,9 +651,9 @@ class Assistant(object):
                 result = bool(soup.select('h3.ftx-02'))  # [<h3 class="ftx-02">商品已成功加入购物车！</h3>]
 
             if result:
-                logger.info('%s x %s 已成功加入购物车', sku_id, count)
+                logger.info(u'%s x %s 已成功加入购物车', sku_id, count)
             else:
-                logger.error('%s 添加到购物车失败', sku_id)
+                logger.error(u'%s 添加到购物车失败', sku_id)
 
     @check_login
     def clear_cart(self):
@@ -677,9 +677,9 @@ class Assistant(object):
             select_resp = self.sess.post(url=select_url, data=data)
             remove_resp = self.sess.post(url=remove_url, data=data)
             if (not response_status(select_resp)) or (not response_status(remove_resp)):
-                logger.error('购物车清空失败')
+                logger.error(u'购物车清空失败')
                 return False
-            logger.info('购物车清空成功')
+            logger.info(u'购物车清空成功')
             return True
         except Exception as e:
             logger.error(e)
@@ -718,7 +718,7 @@ class Assistant(object):
             except Exception as e:
                 logger.error("某商品在购物车中的信息无法解析，报错信息: %s，该商品自动忽略。 %s", e, item)
 
-        logger.info('购物车信息：%s', cart_detail)
+        logger.info(u'购物车信息：%s', cart_detail)
         return cart_detail
 
     def _cancel_select_all_cart_item(self):
@@ -778,7 +778,7 @@ class Assistant(object):
         :return: 运行结果 True/False
         """
         if sku_id in cart:
-            logger.info('%s 已在购物车中，调整数量为 %s', sku_id, count)
+            logger.info(u'%s 已在购物车中，调整数量为 %s', sku_id, count)
             cart_item = cart.get(sku_id)
             return self._change_item_num_in_cart(
                 sku_id=sku_id,
@@ -789,7 +789,7 @@ class Assistant(object):
                 promo_id=cart_item.get('promo_id')
             )
         else:
-            logger.info('%s 不在购物车中，开始加入购物车，数量 %s', sku_id, count)
+            logger.info(u'%s 不在购物车中，开始加入购物车，数量 %s', sku_id, count)
             return self.add_item_to_cart(sku_ids={sku_id: count})
 
     @check_login
@@ -808,7 +808,7 @@ class Assistant(object):
         try:
             resp = self.sess.get(url=url, params=payload)
             if not response_status(resp):
-                logger.error('获取订单结算页信息失败')
+                logger.error(u'获取订单结算页信息失败')
                 return
 
             soup = BeautifulSoup(resp.text, "html.parser")
@@ -833,7 +833,7 @@ class Assistant(object):
             logger.info("下单信息：%s", order_detail)
             return order_detail
         except Exception as e:
-            logger.error('订单结算页面数据解析异常（可以忽略），报错信息：%s', e)
+            logger.error(u'订单结算页面数据解析异常（可以忽略），报错信息：%s', e)
 
     def _save_invoice(self):
         """下单第三方商品时如果未设置发票，将从电子发票切换为普通发票
@@ -944,7 +944,7 @@ class Assistant(object):
 
             if resp_json.get('success'):
                 order_id = resp_json.get('orderId')
-                logger.info('订单提交成功! 订单号：%s', order_id)
+                logger.info(u'订单提交成功! 订单号：%s', order_id)
                 if self.send_message:
                     self.messenger.send(text='jd-assistant 订单提交成功', desp='订单号：%s' % order_id)
                 return True
@@ -957,7 +957,7 @@ class Assistant(object):
                     message = message + '(可能是购物车为空 或 未勾选购物车中商品)'
                 elif result_code == 60123:
                     message = message + '(需要在config.ini文件中配置支付密码)'
-                logger.info('订单提交失败, 错误码：%s, 返回信息：%s', result_code, message)
+                logger.info(u'订单提交失败, 错误码：%s, 返回信息：%s', result_code, message)
                 logger.info(resp_json)
                 return False
         except Exception as e:
@@ -972,17 +972,17 @@ class Assistant(object):
         :return: 订单提交结果 True/False
         """
         for i in range(1, retry + 1):
-            logger.info('第[%s/%s]次尝试提交订单', i, retry)
+            logger.info(u'第[%s/%s]次尝试提交订单', i, retry)
             self.get_checkout_page_detail()
             if self.submit_order():
-                logger.info('第%s次提交订单成功', i)
+                logger.info(u'第%s次提交订单成功', i)
                 return True
             else:
                 if i < retry:
-                    logger.info('第%s次提交失败，%ss后重试', i, interval)
+                    logger.info(u'第%s次提交失败，%ss后重试', i, interval)
                     time.sleep(interval)
         else:
-            logger.info('重试提交%s次结束', retry)
+            logger.info(u'重试提交%s次结束', retry)
             return False
 
     @check_login
@@ -1000,13 +1000,13 @@ class Assistant(object):
         t.start()
 
         for count in range(1, retry + 1):
-            logger.info('第[%s/%s]次尝试提交订单', count, retry)
+            logger.info(u'第[%s/%s]次尝试提交订单', count, retry)
             if self.submit_order():
                 break
-            logger.info('休息%ss', interval)
+            logger.info(u'休息%ss', interval)
             time.sleep(interval)
         else:
-            logger.info('执行结束，提交订单失败！')
+            logger.info(u'执行结束，提交订单失败！')
 
     @check_login
     def get_order_info(self, unpaid=True):
@@ -1028,11 +1028,11 @@ class Assistant(object):
         try:
             resp = self.sess.get(url=url, params=payload, headers=headers)
             if not response_status(resp):
-                logger.error('获取订单页信息失败')
+                logger.error(u'获取订单页信息失败')
                 return
             soup = BeautifulSoup(resp.text, "html.parser")
 
-            logger.info('************************订单列表页查询************************')
+            logger.info(u'************************订单列表页查询************************')
             order_table = soup.find('table', {'class': 'order-tb'})
             table_bodies = order_table.select('tbody')
             exist_order = False
@@ -1082,7 +1082,7 @@ class Assistant(object):
                                                      sum_price, pay_method))
 
             if not exist_order:
-                logger.info('订单查询为空')
+                logger.info(u'订单查询为空')
         except Exception as e:
             logger.error(e)
 
@@ -1261,7 +1261,7 @@ class Assistant(object):
             logger.info(resp.text)
             resp_json = parse_json(resp.text)
         except Exception as e:
-            logger.error('秒杀请求出错：%s', str(e))
+            logger.error(u'秒杀请求出错：%s', str(e))
             return False
         # 返回信息
         # 抢购失败：
@@ -1275,10 +1275,10 @@ class Assistant(object):
             order_id = resp_json.get('orderId')
             total_money = resp_json.get('totalMoney')
             pay_url = 'https:' + resp_json.get('pcUrl')
-            logger.info('抢购成功，订单号: %s, 总价: %s, 电脑端付款链接: %s', order_id, total_money, pay_url)
+            logger.info(u'抢购成功，订单号: %s, 总价: %s, 电脑端付款链接: %s', order_id, total_money, pay_url)
             return True
         else:
-            logger.info('抢购失败，返回信息: %s', resp_json)
+            logger.info(u'抢购失败，返回信息: %s', resp_json)
             return False
 
     @deprecated
@@ -1298,7 +1298,7 @@ class Assistant(object):
         :return: 抢购结果 True/False
         """
         for count in range(1, retry + 1):
-            logger.info('第[%s/%s]次尝试抢购商品:%s', count, retry, sku_id)
+            logger.info(u'第[%s/%s]次尝试抢购商品:%s', count, retry, sku_id)
 
             self.request_seckill_url(sku_id)
             if not fast_mode:
@@ -1307,10 +1307,10 @@ class Assistant(object):
             if self.submit_seckill_order(sku_id, num):
                 return True
             else:
-                logger.info('休息%ss', interval)
+                logger.info(u'休息%ss', interval)
                 time.sleep(interval)
         else:
-            logger.info('执行结束，抢购%s失败！', sku_id)
+            logger.info(u'执行结束，抢购%s失败！', sku_id)
             return False
 
     @deprecated
@@ -1325,13 +1325,13 @@ class Assistant(object):
         :return:
         """
         items_dict = parse_sku_id(sku_ids=sku_ids)
-        logger.info('准备抢购商品:%s', list(items_dict.keys()))
+        logger.info(u'准备抢购商品:%s', list(items_dict.keys()))
 
         t = Timer(buy_time=buy_time)
         t.start()
 
         for sku_id in items_dict:
-            logger.info('开始抢购商品:%s', sku_id)
+            logger.info(u'开始抢购商品:%s', sku_id)
             self.exec_seckill(sku_id, retry, interval, num, fast_mode)
 
     @check_login
@@ -1360,13 +1360,13 @@ class Assistant(object):
         self.add_item_to_cart(sku_ids={sku_id: num})
 
         for count in range(1, retry + 1):
-            logger.info('第[%s/%s]次尝试提交订单', count, retry)
+            logger.info(u'第[%s/%s]次尝试提交订单', count, retry)
             if self.submit_order():
                 break
-            logger.info('休息%ss', interval)
+            logger.info(u'休息%ss', interval)
             time.sleep(interval)
         else:
-            logger.info('执行结束，提交订单失败！')
+            logger.info(u'执行结束，提交订单失败！')
 
     @check_login
     def buy_item_in_stock(self, sku_ids, area, wait_all=False, stock_interval=3, submit_retry=3, submit_interval=5):
@@ -1384,13 +1384,13 @@ class Assistant(object):
         area_id = parse_area_id(area=area)
 
         if not wait_all:
-            logger.info('下单模式：%s 任一商品有货并且未下架均会尝试下单', items_list)
+            logger.info(u'下单模式：%s 任一商品有货并且未下架均会尝试下单', items_list)
             while True:
                 for (sku_id, count) in items_dict.items():
                     if not self.if_item_can_be_ordered(sku_ids={sku_id: count}, area=area_id):
-                        logger.info('%s 不满足下单条件，%ss后进行下一次查询', sku_id, stock_interval)
+                        logger.info(u'%s 不满足下单条件，%ss后进行下一次查询', sku_id, stock_interval)
                     else:
-                        logger.info('%s 满足下单条件，开始执行', sku_id)
+                        logger.info(u'%s 满足下单条件，开始执行', sku_id)
                         self._cancel_select_all_cart_item()
                         self._add_or_change_cart_item(self.get_cart_detail(), sku_id, count)
                         if self.submit_order_with_retry(submit_retry, submit_interval):
@@ -1398,12 +1398,12 @@ class Assistant(object):
 
                     time.sleep(stock_interval)
         else:
-            logger.info('下单模式：%s 所有都商品同时有货并且未下架才会尝试下单', items_list)
+            logger.info(u'下单模式：%s 所有都商品同时有货并且未下架才会尝试下单', items_list)
             while True:
                 if not self.if_item_can_be_ordered(sku_ids=sku_ids, area=area_id):
-                    logger.info('%s 不满足下单条件，%ss后进行下一次查询', items_list, stock_interval)
+                    logger.info(u'%s 不满足下单条件，%ss后进行下一次查询', items_list, stock_interval)
                 else:
-                    logger.info('%s 满足下单条件，开始执行', items_list)
+                    logger.info(u'%s 满足下单条件，开始执行', items_list)
                     self._cancel_select_all_cart_item()
                     shopping_cart = self.get_cart_detail()
                     for (sku_id, count) in items_dict.items():

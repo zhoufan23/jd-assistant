@@ -32,7 +32,7 @@ class Messenger(object):
             )
             resp_json = json.loads(resp.text)
             if resp_json.get('errno') == 0:
-                logger.info('Message sent successfully [text: %s, desp: %s]', text, desp)
+                logger.info(u'Message sent successfully [text: %s, desp: %s]', text, desp)
             else:
                 logger.error('Fail to send message, reason: %s', resp.text)
         except requests.exceptions.RequestException as req_error:
