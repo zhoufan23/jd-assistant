@@ -10,5 +10,6 @@ if __name__ == '__main__':
 
     asst = Assistant()      # 初始化
     asst.login_by_QRcode()  # 扫码登陆
-    asst.exec_reserve_seckill_by_time(sku_id='100012043978', buy_time='2020-06-23 9:59:59.900', retry=3, interval=0.1)
+    asst.exec_reserve_seckill_by_time(sku_id='100012043978', buy_time='2020-06-23 10:00:00.000', retry=3, interval=0.5)
+    # asst.exec_reserve_seckill_by_time(sku_id='7897905', buy_time='2020-06-23 9:25:00.000', retry=3, interval=0.1)
     
